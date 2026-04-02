@@ -601,7 +601,7 @@
       </div>
       <div class="lobby-wait" id="lb-wait">
         <div class="ldots"><span></span><span></span><span></span></div>
-        <span>Waiting for host to start</span>
+        <span id="lb-wait-text">Waiting for host to start</span>
       </div>
     </div>
   </div>
@@ -788,8 +788,15 @@
       }).join('');
       var sb=document.getElementById('start-btn');
       var w=document.getElementById('lb-wait');
-      if(isHost){sb.classList.remove('hidden');sb.disabled=d.players.length<2;w.style.display=d.players.length<2?'flex':'none';}
-      else{sb.classList.add('hidden');w.style.display='flex';}
+      var wt=document.getElementById('lb-wait-text');
+      if(isHost){
+        sb.classList.remove('hidden');sb.disabled=d.players.length<2;
+        w.style.display=d.players.length<2?'flex':'none';
+        wt.textContent='Waiting for more players to join';
+      } else {
+        sb.classList.add('hidden');w.style.display='flex';
+        wt.textContent='Waiting for host to start';
+      }
     });
 
     // GAME
