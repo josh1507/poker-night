@@ -13,7 +13,8 @@ const io = new Server(server, {
 });
 
 // ── Stats tracking ──
-const STATS_FILE = path.join(__dirname, 'stats.json');
+const STATS_DIR = process.env.RAILWAY_VOLUME_MOUNT_PATH || __dirname;
+const STATS_FILE = path.join(STATS_DIR, 'stats.json');
 const DASHBOARD_PASS = process.env.DASHBOARD_PASS || 'poker2026';
 
 function loadStats() {
