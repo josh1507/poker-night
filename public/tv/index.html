@@ -1,0 +1,802 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Poker Night - Table</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    /* ═══════════════════════════════════════════
+       POKER NIGHT — TV TABLE DISPLAY
+       Casino-grade dark felt aesthetic
+       ═══════════════════════════════════════════ */
+
+    :root {
+      --felt: #0d6b3a;
+      --felt-mid: #084a28;
+      --felt-dark: #042e18;
+      --rail: #2e1503;
+      --rail-hi: #4a2510;
+      --rail-inner: #6b3a1a;
+      --rail-lo: #1a0a02;
+      --gold: #c9a84c;
+      --gold-hi: #e8c65e;
+      --gold-lo: #a07b2e;
+      --chip-blue: #4ea8de;
+      --red: #c0392b;
+      --card-red: #b01015;
+      --card-black: #111111;
+      --green-badge: #27ae60;
+      --bg: #0a0c0e;
+      --text: #e8e4dc;
+      --text-dim: #8b8475;
+      --text-muted: #55504a;
+    }
+
+    * { margin:0; padding:0; box-sizing:border-box; }
+
+    body {
+      font-family: 'Inter', -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      overflow: hidden;
+      height: 100vh;
+      width: 100vw;
+    }
+
+    /* ── Screen system ── */
+    .screen {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+    }
+    .screen.active {
+      display: flex;
+    }
+
+    /* ═══ CONNECT SCREEN ═══ */
+    #connect-screen {
+      background:
+        radial-gradient(ellipse at 50% 40%, rgba(15,81,50,0.25) 0%, transparent 65%),
+        var(--bg);
+    }
+    .connect-wrap { text-align: center; }
+    .connect-suits {
+      font-size: 1.8rem;
+      letter-spacing: 0.6em;
+      margin-bottom: 1rem;
+    }
+    .connect-suits .s-red { color: var(--red); }
+    .connect-suits .s-blk { color: var(--text-dim); }
+    .connect-title {
+      font-family: 'Cinzel', serif;
+      font-size: 4.5rem;
+      font-weight: 900;
+      color: var(--gold);
+      letter-spacing: 0.06em;
+      text-shadow: 0 2px 20px rgba(201,168,76,0.15);
+    }
+    .connect-sub {
+      font-family: 'Cinzel', serif;
+      font-size: 0.95rem;
+      color: var(--text-dim);
+      letter-spacing: 0.35em;
+      text-transform: uppercase;
+      margin-top: 4px;
+      margin-bottom: 1.5rem;
+    }
+    .connect-instructions {
+      font-family: 'Inter', sans-serif;
+      font-size: 0.95rem;
+      color: var(--text-muted);
+      line-height: 1.7;
+      margin-bottom: 2.5rem;
+      max-width: 480px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    .connect-label {
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.25em;
+      color: var(--text-muted);
+      margin-bottom: 10px;
+    }
+    .connect-input {
+      display: block;
+      margin: 0 auto 1.2rem;
+      width: 320px;
+      padding: 18px;
+      font-family: 'Cinzel', serif;
+      font-size: 2.8rem;
+      font-weight: 700;
+      text-align: center;
+      text-transform: uppercase;
+      letter-spacing: 0.6em;
+      background: rgba(255,255,255,0.04);
+      border: 2px solid rgba(255,255,255,0.08);
+      border-radius: 16px;
+      color: var(--gold);
+      outline: none;
+      transition: border-color 0.25s;
+    }
+    .connect-input:focus { border-color: var(--gold-lo); }
+    .connect-input::placeholder { color: rgba(255,255,255,0.1); font-size: 2rem; }
+    .connect-btn {
+      padding: 14px 48px;
+      font-family: 'Cinzel', serif;
+      font-size: 1rem;
+      font-weight: 700;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      background: linear-gradient(180deg, var(--gold) 0%, var(--gold-lo) 100%);
+      color: #1a1200;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      box-shadow: 0 4px 16px rgba(201,168,76,0.25);
+      transition: transform 0.12s;
+    }
+    .connect-btn:active { transform: scale(0.97); }
+
+    /* ═══ LOBBY SCREEN ═══ */
+    #lobby-screen {
+      background:
+        radial-gradient(ellipse at 50% 30%, rgba(15,81,50,0.2) 0%, transparent 60%),
+        var(--bg);
+    }
+    .lobby-wrap { text-align: center; width: 85%; max-width: 900px; }
+    .lobby-title {
+      font-family: 'Cinzel', serif;
+      font-size: 3rem;
+      font-weight: 900;
+      color: var(--gold);
+      letter-spacing: 0.06em;
+      margin-bottom: 2rem;
+    }
+    .lobby-code-label {
+      font-size: 0.65rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.35em;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+    }
+    .lobby-code-val {
+      font-family: 'Cinzel', serif;
+      font-size: 7rem;
+      font-weight: 900;
+      letter-spacing: 0.35em;
+      color: var(--gold);
+      text-shadow: 0 0 60px rgba(201,168,76,0.15);
+      line-height: 1;
+      margin-bottom: 8px;
+    }
+    .lobby-url {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      margin-bottom: 2rem;
+    }
+    .lobby-steps {
+      display: flex;
+      justify-content: center;
+      gap: 40px;
+      margin-bottom: 2.5rem;
+    }
+    .lobby-step {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      max-width: 200px;
+    }
+    .lobby-step-num {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: rgba(201,168,76,0.12);
+      border: 1.5px solid rgba(201,168,76,0.3);
+      color: var(--gold);
+      font-family: 'Cinzel', serif;
+      font-size: 1rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .lobby-step-text {
+      font-family: 'Inter', sans-serif;
+      font-size: 0.85rem;
+      color: var(--text-dim);
+      line-height: 1.5;
+    }
+    .lobby-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      justify-content: center;
+      margin-bottom: 2.5rem;
+    }
+    .lobby-card {
+      background: rgba(255,255,255,0.04);
+      border: 1.5px solid rgba(255,255,255,0.07);
+      border-radius: 12px;
+      padding: 12px 24px;
+      font-size: 1.15rem;
+      font-weight: 600;
+      display: flex; align-items: center; gap: 10px;
+      animation: popIn 0.35s ease;
+    }
+    .lobby-card .dot { width: 9px; height: 9px; border-radius: 50%; background: var(--green-badge); }
+    .lobby-card.host { border-color: var(--gold-lo); }
+    .lobby-card.host .dot { background: var(--gold); }
+    @keyframes popIn {
+      from { opacity:0; transform: scale(0.92); }
+      to { opacity:1; transform: scale(1); }
+    }
+    .lobby-wait {
+      display: flex; align-items: center; justify-content: center; gap: 12px;
+      font-size: 1rem; color: var(--text-muted);
+    }
+    .lobby-dots { display: flex; gap: 5px; }
+    .lobby-dots span {
+      width: 7px; height: 7px; border-radius: 50%; background: var(--text-muted);
+      animation: dotB 1.4s ease-in-out infinite;
+    }
+    .lobby-dots span:nth-child(2) { animation-delay: .15s; }
+    .lobby-dots span:nth-child(3) { animation-delay: .3s; }
+    @keyframes dotB {
+      0%,80%,100% { opacity:.3; transform:scale(.8); }
+      40% { opacity:1; transform:scale(1.1); }
+    }
+
+    /* ═══ GAME SCREEN ═══ */
+    #game-screen { background: var(--bg); }
+
+    /* HUD bar */
+    .hud {
+      position: fixed; top:0; left:0; right:0; z-index:20;
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 10px 28px;
+      background: rgba(10,12,14,0.75);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border-bottom: 1px solid rgba(255,255,255,0.04);
+    }
+    .hud-left, .hud-right { display: flex; gap: 14px; }
+    .hud-pill {
+      display: flex; flex-direction: column; align-items: center;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.05);
+      padding: 3px 18px; border-radius: 10px;
+    }
+    .hud-pill-label { font-size:.5rem; font-weight:700; text-transform:uppercase; letter-spacing:.15em; color:var(--text-muted); }
+    .hud-pill-val { font-size:.85rem; font-weight:700; color:var(--text); }
+    .hud-phase {
+      font-family: 'Cinzel', serif;
+      font-size: 1.05rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.25em;
+      color: var(--gold);
+    }
+
+    /* ── FELT TABLE ── */
+    .table-area {
+      position: fixed; inset: 0;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .felt {
+      width: 80vw;
+      height: 68vh;
+      position: relative;
+      border-radius: 50%;
+      /* Layered felt texture with noise and spotlight */
+      background:
+        radial-gradient(ellipse at 50% 42%, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.02) 25%, transparent 55%),
+        radial-gradient(ellipse at 50% 50%, var(--felt) 0%, var(--felt-mid) 50%, var(--felt-dark) 100%);
+      background-blend-mode: screen, normal;
+      /* Mahogany rail with depth */
+      box-shadow:
+        inset 0 0 100px rgba(0,0,0,0.3),
+        0 0 0 6px var(--rail-inner),
+        0 0 0 10px var(--rail),
+        0 0 0 22px var(--rail),
+        0 0 0 24px var(--rail-inner),
+        0 0 0 26px var(--rail-hi),
+        0 0 0 28px var(--rail-lo),
+        0 0 0 30px rgba(0,0,0,0.7),
+        0 8px 40px rgba(0,0,0,0.4),
+        0 0 160px rgba(0,0,0,0.5);
+    }
+    .felt::before {
+      /* Inner stitching line */
+      content: '';
+      position: absolute;
+      inset: 36px;
+      border-radius: 50%;
+      border: 1.5px dashed rgba(255,255,255,0.06);
+      pointer-events: none;
+    }
+    .felt::after {
+      /* Subtle noise/texture overlay */
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: 50%;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+      background-size: 256px 256px;
+      opacity: 0.5;
+      pointer-events: none;
+    }
+
+    /* ── Center (community + pot) ── */
+    .table-center {
+      position: absolute;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      text-align: center; z-index: 5;
+    }
+    .community { display: flex; gap: 12px; justify-content: center; }
+    .community .card {
+      width: 90px; height: 130px; border-radius: 8px;
+    }
+    .community .card-ph {
+      width: 90px; height: 130px; border-radius: 8px;
+      background: rgba(255,255,255,0.03);
+      border: 1.5px dashed rgba(255,255,255,0.08);
+      display: inline-block;
+    }
+
+    .pot-bubble {
+      margin-top: 16px;
+      display: inline-flex; flex-direction: column; align-items: center;
+      background: rgba(0,0,0,0.45);
+      border: 1px solid rgba(201,168,76,0.15);
+      padding: 5px 28px; border-radius: 20px;
+    }
+    .pot-lbl { font-size:.55rem; font-weight:700; text-transform:uppercase; letter-spacing:.2em; color:var(--text-muted); }
+    .pot-val { font-size:1.5rem; font-weight:800; color:var(--gold); }
+
+    /* ── SEATS ── */
+    .seats { position: absolute; inset: 0; }
+    .seat {
+      position: absolute;
+      transform: translate(-50%, -50%);
+      text-align: center;
+      z-index: 10;
+      transition: opacity 0.4s;
+    }
+    .seat-0  { top:88%; left:32%; }
+    .seat-1  { top:88%; left:68%; }
+    .seat-2  { top:62%; left:96%; }
+    .seat-3  { top:28%; left:96%; }
+    .seat-4  { top:8%;  left:68%; }
+    .seat-5  { top:8%;  left:32%; }
+    .seat-6  { top:28%; left:4%;  }
+    .seat-7  { top:62%; left:4%;  }
+    .seat-8  { top:8%;  left:50%; }
+    .seat-9  { top:88%; left:50%; }
+
+    .seat-box {
+      background: rgba(0,0,0,0.65);
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+      border: 2px solid rgba(255,255,255,0.07);
+      border-radius: 14px;
+      padding: 10px 18px;
+      min-width: 120px;
+      position: relative;
+      transition: all 0.4s ease;
+    }
+
+    .seat.turn .seat-box {
+      border-color: var(--gold);
+      box-shadow: 0 0 22px rgba(201,168,76,0.25), 0 0 50px rgba(201,168,76,0.08);
+      animation: glow 2s ease-in-out infinite;
+    }
+    @keyframes glow {
+      0%,100% { box-shadow: 0 0 22px rgba(201,168,76,0.2); }
+      50% { box-shadow: 0 0 34px rgba(201,168,76,0.35), 0 0 60px rgba(201,168,76,0.1); }
+    }
+    .seat.folded { opacity: 0.25; }
+    .seat.allin .seat-box { border-color: var(--red); box-shadow: 0 0 14px rgba(192,57,43,0.2); }
+
+    .seat-name { font-size:.95rem; font-weight:700; white-space:nowrap; }
+    .seat-chips { font-size:.75rem; font-weight:600; color:var(--gold); margin-top:2px; }
+    .seat-bet {
+      position: absolute; top:-22px; left:50%; transform:translateX(-50%);
+      background: rgba(78,168,222,0.15); border:1px solid rgba(78,168,222,0.25);
+      color: var(--chip-blue); font-size:.72rem; font-weight:700;
+      padding: 2px 10px; border-radius: 10px; white-space:nowrap;
+    }
+    .dealer-chip {
+      position: absolute; top:-8px; right:-8px;
+      width: 24px; height: 24px; border-radius: 50%;
+      background: var(--gold); color: #1a1200;
+      font-size:.6rem; font-weight:900;
+      display:flex; align-items:center; justify-content:center;
+      box-shadow: 0 2px 6px rgba(201,168,76,0.4);
+    }
+    .status-tag {
+      font-size:.55rem; font-weight:800; text-transform:uppercase; letter-spacing:.08em;
+      padding: 2px 8px; border-radius: 5px; display:inline-block; margin-top:4px;
+    }
+    .status-tag.ai { background:var(--red); color:#fff; }
+    .status-tag.win { background:var(--green-badge); color:#fff; }
+
+    /* Seat mini cards */
+    .seat-cards { display:flex; gap:4px; justify-content:center; margin-top:6px; }
+    .seat-cards .card { width:46px; height:66px; border-radius:6px; }
+    .seat-cards .card-back-mini {
+      width:46px; height:66px; border-radius:6px;
+      background: repeating-linear-gradient(135deg, #1a237e 0px, #1a237e 3px, #283593 3px, #283593 6px);
+      border: 2px solid var(--gold-lo);
+      box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+    }
+
+    /* ── CARD STYLING (realistic playing card) ── */
+    .card {
+      display: inline-block;
+      position: relative;
+      background: linear-gradient(160deg, #ffffff 0%, #f5f3ee 50%, #edeae3 100%);
+      border-radius: 8px;
+      font-family: 'Inter', sans-serif;
+      box-shadow:
+        0 2px 4px rgba(0,0,0,0.15),
+        0 6px 16px rgba(0,0,0,0.3),
+        inset 0 1px 0 rgba(255,255,255,0.9);
+      user-select: none;
+      overflow: hidden;
+    }
+    .card::before {
+      content:''; position:absolute; inset:3px;
+      border:1px solid rgba(0,0,0,0.06); border-radius: 5px;
+      pointer-events:none;
+    }
+    .card.red { color: var(--card-red); }
+    .card.blk { color: var(--card-black); }
+
+    /* Top-left corner: rank + suit */
+    .card .corner-tl {
+      position: absolute;
+      top: 4px; left: 5px;
+      display: flex; flex-direction: column;
+      align-items: center;
+      line-height: 1;
+    }
+    .card .corner-tl .cr {
+      font-size: 0.95em;
+      font-weight: 800;
+    }
+    .card .corner-tl .cs {
+      font-size: 0.7em;
+      margin-top: -1px;
+    }
+
+    /* Bottom-right corner: rank + suit (upside down) */
+    .card .corner-br {
+      position: absolute;
+      bottom: 4px; right: 5px;
+      display: flex; flex-direction: column;
+      align-items: center;
+      line-height: 1;
+      transform: rotate(180deg);
+    }
+    .card .corner-br .cr {
+      font-size: 0.95em;
+      font-weight: 800;
+    }
+    .card .corner-br .cs {
+      font-size: 0.7em;
+      margin-top: -1px;
+    }
+
+    /* Center suit symbol */
+    .card .center-suit {
+      position: absolute;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 2em;
+      opacity: 0.85;
+    }
+
+    /* Community card sizing overrides */
+    .community .card .corner-tl .cr { font-size: 1.1em; }
+    .community .card .corner-tl .cs { font-size: 0.85em; }
+    .community .card .corner-br .cr { font-size: 1.1em; }
+    .community .card .corner-br .cs { font-size: 0.85em; }
+    .community .card .center-suit { font-size: 2.8em; }
+
+    /* Seat card sizing overrides */
+    .seat-cards .card .corner-tl .cr { font-size: 0.8em; }
+    .seat-cards .card .corner-tl .cs { font-size: 0.6em; }
+    .seat-cards .card .corner-br .cr { font-size: 0.8em; }
+    .seat-cards .card .corner-br .cs { font-size: 0.6em; }
+    .seat-cards .card .center-suit { font-size: 1.6em; }
+
+    @keyframes deal {
+      from { opacity:0; transform:translateY(-30px) scale(.85) rotateY(80deg); }
+      60%  { opacity:1; transform:translateY(4px) scale(1.02) rotateY(0); }
+      to   { opacity:1; transform:translateY(0) scale(1) rotateY(0); }
+    }
+    .card.anim { animation: deal .45s cubic-bezier(.34,1.56,.64,1) forwards; }
+
+    /* ── Winner toast ── */
+    .toast {
+      position: fixed; bottom:36px; left:50%; transform:translateX(-50%);
+      z-index:100; display:none;
+    }
+    .toast.show { display:block; animation: toastUp .45s cubic-bezier(.34,1.56,.64,1); }
+    @keyframes toastUp {
+      from { opacity:0; transform:translateX(-50%) translateY(16px) scale(.96); }
+      to   { opacity:1; transform:translateX(-50%) translateY(0) scale(1); }
+    }
+    .toast-box {
+      background: rgba(10,12,14,0.92);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1.5px solid rgba(201,168,76,0.2);
+      border-radius: 20px;
+      padding: 24px 48px;
+      text-align: center;
+      box-shadow: 0 12px 48px rgba(0,0,0,0.5);
+    }
+    .toast-box h2 {
+      font-family: 'Cinzel', serif;
+      font-size: 1.7rem; font-weight:700; color:var(--gold); margin-bottom:4px;
+    }
+    .toast-hand { font-size:.95rem; color:var(--text-dim); margin-bottom:8px; }
+    .toast-sd { font-size:.8rem; color:var(--text-muted); line-height:1.9; }
+    .toast-next { font-size:.7rem; color:var(--text-muted); margin-top:12px; opacity:.6; }
+
+    /* ═══ GAME OVER ═══ */
+    #gameover-screen {
+      background: radial-gradient(ellipse at 50% 40%, rgba(201,168,76,0.08) 0%, transparent 60%), var(--bg);
+    }
+    .go-wrap { text-align:center; }
+    .go-trophy { font-size:5rem; margin-bottom:1rem; }
+    .go-title {
+      font-family:'Cinzel',serif; font-size:3.5rem; font-weight:900;
+      color:var(--gold); margin-bottom:1rem;
+    }
+    .go-name { font-size:2.5rem; font-weight:800; margin-bottom:.5rem; }
+    .go-chips { font-size:1.3rem; color:var(--gold); }
+  </style>
+</head>
+<body>
+
+  <!-- CONNECT -->
+  <div id="connect-screen" class="screen active">
+    <div class="connect-wrap">
+      <div class="connect-suits">
+        <span class="s-red">&#9829;</span>
+        <span class="s-blk">&#9824;</span>
+        <span class="s-red">&#9830;</span>
+        <span class="s-blk">&#9827;</span>
+      </div>
+      <div class="connect-title">Poker Night</div>
+      <div class="connect-sub">Table Display</div>
+      <div class="connect-instructions">
+        Display this screen on your TV. Players will join from their phones.
+      </div>
+      <div class="connect-label">Enter Room Code</div>
+      <input class="connect-input" id="tv-code" placeholder="- - - -" maxlength="4" autocomplete="off" spellcheck="false">
+      <button class="connect-btn" onclick="connectTV()">Connect</button>
+    </div>
+  </div>
+
+  <!-- LOBBY -->
+  <div id="lobby-screen" class="screen">
+    <div class="lobby-wrap">
+      <div class="lobby-title">Poker Night</div>
+      <div class="lobby-code-label">Join With Code</div>
+      <div class="lobby-code-val" id="lb-code"></div>
+      <div class="lobby-url" id="lb-url"></div>
+      <div class="lobby-steps">
+        <div class="lobby-step">
+          <div class="lobby-step-num">1</div>
+          <div class="lobby-step-text">Share the room code with your players</div>
+        </div>
+        <div class="lobby-step">
+          <div class="lobby-step-num">2</div>
+          <div class="lobby-step-text">Players join at <strong id="lb-url-step" style="color:var(--text);">the URL above</strong> on their phones</div>
+        </div>
+        <div class="lobby-step">
+          <div class="lobby-step-num">3</div>
+          <div class="lobby-step-text">Host taps <strong style="color:var(--gold);">"Deal the Cards"</strong> to begin</div>
+        </div>
+      </div>
+      <div class="lobby-grid" id="lb-players"></div>
+      <div class="lobby-wait">
+        <div class="lobby-dots"><span></span><span></span><span></span></div>
+        <span>Waiting for host to start</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- GAME -->
+  <div id="game-screen" class="screen">
+    <div class="hud">
+      <div class="hud-left">
+        <div class="hud-pill"><span class="hud-pill-label">Room</span><span class="hud-pill-val" id="h-room"></span></div>
+      </div>
+      <div class="hud-phase" id="h-phase"></div>
+      <div class="hud-right">
+        <div class="hud-pill"><span class="hud-pill-label">Blinds</span><span class="hud-pill-val" id="h-blinds"></span></div>
+        <div class="hud-pill"><span class="hud-pill-label">Hand</span><span class="hud-pill-val" id="h-hand"></span></div>
+      </div>
+    </div>
+    <div class="table-area">
+      <div class="felt">
+        <div class="seats" id="seats"></div>
+        <div class="table-center">
+          <div class="community" id="cc"></div>
+          <div class="pot-bubble"><span class="pot-lbl">Pot</span><span class="pot-val" id="pot-val">$0</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="toast" id="toast"><div class="toast-box" id="toast-box"></div></div>
+  </div>
+
+  <!-- GAME OVER -->
+  <div id="gameover-screen" class="screen">
+    <div class="go-wrap">
+      <div class="go-trophy">&#127942;</div>
+      <div class="go-title">Champion</div>
+      <div class="go-name" id="go-name"></div>
+      <div class="go-chips" id="go-chips"></div>
+    </div>
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    const socket = io();
+    const S = { h:'\u2665', d:'\u2666', c:'\u2663', s:'\u2660' };
+    const R = { 2:'2',3:'3',4:'4',5:'5',6:'6',7:'7',8:'8',9:'9',10:'10',11:'J',12:'Q',13:'K',14:'A' };
+
+    function show(id) {
+      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+      document.getElementById(id).classList.add('active');
+    }
+
+    function card(c, cls) {
+      if (!c) return '<div class="card-ph"></div>';
+      var col = (c.suit==='h'||c.suit==='d') ? 'red' : 'blk';
+      var rank = R[c.rank];
+      var suit = S[c.suit];
+      return '<div class="card '+col+' '+(cls||'')+'">' +
+        '<div class="corner-tl"><span class="cr">'+rank+'</span><span class="cs">'+suit+'</span></div>' +
+        '<div class="center-suit">'+suit+'</div>' +
+        '<div class="corner-br"><span class="cr">'+rank+'</span><span class="cs">'+suit+'</span></div>' +
+        '</div>';
+    }
+
+    function connectTV() {
+      const code = document.getElementById('tv-code').value.toUpperCase().trim();
+      if (code.length !== 4) return;
+      socket.emit('tv-join', { code }, function(res) {
+        if (res.success) {
+          show('lobby-screen');
+          document.getElementById('lb-code').textContent = res.code;
+          document.getElementById('lb-url').textContent = location.origin;
+          document.getElementById('lb-url-step').textContent = location.origin;
+        } else { alert(res.error); }
+      });
+    }
+    document.getElementById('tv-code').addEventListener('keyup', function(e) { if(e.key==='Enter') connectTV(); });
+
+    function seatPos(n) {
+      if(n<=2) return [0,4];
+      if(n<=3) return [0,4,8];
+      if(n<=4) return [0,2,4,6];
+      if(n<=5) return [0,2,4,6,8];
+      if(n<=6) return [0,1,3,4,5,7];
+      if(n<=7) return [0,1,3,4,5,7,8];
+      if(n<=8) return [0,1,2,3,4,5,6,7];
+      if(n<=9) return [0,1,2,3,4,5,6,7,8];
+      return [0,1,2,3,4,5,6,7,8,9];
+    }
+
+    socket.on('lobby-state', function(st) {
+      show('lobby-screen');
+      document.getElementById('lb-code').textContent = st.code;
+      document.getElementById('lb-url').textContent = location.origin;
+      document.getElementById('lb-url-step').textContent = location.origin;
+      document.getElementById('lb-players').innerHTML = st.players.map(function(p) {
+        return '<div class="lobby-card '+(p.id===st.hostId?'host':'')+'"><span class="dot"></span>'+p.name+(p.id===st.hostId?' (Host)':'')+'</div>';
+      }).join('');
+    });
+
+    socket.on('game-state', function(st) {
+      show('game-screen');
+
+      document.getElementById('h-room').textContent = st.roomCode;
+      document.getElementById('h-blinds').textContent = st.smallBlind+'/'+st.bigBlind;
+      document.getElementById('h-hand').textContent = '#'+st.handNumber;
+      var phaseMap = {'pre-flop':'Pre-Flop','flop':'The Flop','turn':'The Turn','river':'The River','showdown':'Showdown'};
+      document.getElementById('h-phase').textContent = phaseMap[st.phase]||st.phase;
+
+      // Community
+      var ccEl = document.getElementById('cc');
+      var h = '';
+      for (var i=0; i<5; i++) {
+        if (i < st.communityCards.length) h += card(st.communityCards[i], 'anim');
+        else h += '<div class="card-ph"></div>';
+      }
+      ccEl.innerHTML = h;
+
+      // Pot
+      var tot = st.pot;
+      for (var j=0; j<st.players.length; j++) tot += st.players[j].bet;
+      document.getElementById('pot-val').textContent = '$'+tot;
+
+      // Seats
+      var pos = seatPos(st.players.length);
+      var sh = '';
+      st.players.forEach(function(p, idx) {
+        var ps = pos[idx] !== undefined ? pos[idx] : idx;
+        var cls = 'seat seat-'+ps;
+        if (p.isTurn) cls += ' turn';
+        if (p.folded) cls += ' folded';
+        if (p.allIn) cls += ' allin';
+
+        var badge = p.isDealer ? '<div class="dealer-chip">D</div>' : '';
+        var bet = p.bet > 0 ? '<div class="seat-bet">$'+p.bet+'</div>' : '';
+        var status = '';
+        if (p.allIn && !p.folded) status = '<div class="status-tag ai">All In</div>';
+        var win = st.winners ? st.winners.find(function(w){return w.playerId===p.id}) : null;
+        if (win) status = '<div class="status-tag win">+$'+win.amount+'</div>';
+
+        var cards = '';
+        if (st.phase === 'showdown' && p.holeCards && !p.folded) {
+          cards = '<div class="seat-cards">'+p.holeCards.map(function(c){return card(c,'anim')}).join('')+'</div>';
+        } else if (!p.folded) {
+          cards = '<div class="seat-cards"><div class="card-back-mini"></div><div class="card-back-mini"></div></div>';
+        }
+
+        sh += '<div class="'+cls+'"><div class="seat-box">'+bet+badge+
+          '<div class="seat-name">'+p.name+'</div><div class="seat-chips">$'+p.chips+'</div>'+
+          status+'</div>'+cards+'</div>';
+      });
+      document.getElementById('seats').innerHTML = sh;
+
+      // Toast
+      var toast = document.getElementById('toast');
+      var tbox = document.getElementById('toast-box');
+      if (st.handComplete && st.winners && st.winners.length > 0) {
+        var th = '';
+        st.winners.forEach(function(w) {
+          th += '<h2>'+w.name+' wins $'+w.amount+'</h2>';
+          if (w.hand) th += '<div class="toast-hand">'+w.hand+'</div>';
+        });
+        if (st.showdownData) {
+          th += '<div class="toast-sd">';
+          st.showdownData.forEach(function(sd) {
+            var c = sd.holeCards.map(function(x){return R[x.rank]+S[x.suit]}).join(' ');
+            th += sd.name+': '+c+' &mdash; '+sd.handName+'<br>';
+          });
+          th += '</div>';
+        }
+        th += '<div class="toast-next">Next hand starting soon...</div>';
+        tbox.innerHTML = th;
+        toast.classList.add('show');
+        setTimeout(function(){ toast.classList.remove('show'); }, 4500);
+      } else {
+        toast.classList.remove('show');
+      }
+    });
+
+    socket.on('game-over', function(d) {
+      show('gameover-screen');
+      document.getElementById('go-name').textContent = d.name;
+      document.getElementById('go-chips').textContent = '$'+d.chips;
+    });
+
+    socket.on('disconnect', function() { setTimeout(function(){ socket.connect(); }, 1000); });
+  </script>
+</body>
+</html>
