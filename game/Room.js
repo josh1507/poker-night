@@ -12,6 +12,10 @@ class Room {
     this.startingChips = DEFAULT_STARTING_CHIPS;
     this.smallBlind = DEFAULT_SMALL_BLIND;
     this.bigBlind = DEFAULT_BIG_BLIND;
+    this.maxPlayers = 10;
+    this.blindIncrease = false;
+    this.blindTimer = 15; // minutes
+    this.blindIncreaseAt = null; // timestamp for next increase
     this.handNumber = 0;
     this.gameStarted = false;
   }
@@ -26,7 +30,7 @@ class Room {
       return existing;
     }
 
-    if (this.players.length >= 10) return null;
+    if (this.players.length >= this.maxPlayers) return null;
     if (this.gameStarted) return null;
 
     const player = {
@@ -74,6 +78,18 @@ class Room {
 
     this.handNumber++;
 
+    // Auto-increase blinds on timer
+    if (this.blindIncrease) {
+      const now = Date.now();
+      if (!this.blindIncreaseAt) {
+        this.blindIncreaseAt = now + this.blindTimer * 60 * 1000;
+      } else if (now >= this.blindIncreaseAt) {
+        this.smallBlind *= 2;
+        this.bigBlind *= 2;
+        this.blindIncreaseAt = now + this.blindTimer * 60 * 1000;
+      }
+    }
+
     // Advance dealer
     if (this.handNumber > 1) {
       this.dealerIndex = (this.dealerIndex + 1) % activePlayers.length;
@@ -114,6 +130,10 @@ class Room {
       handNumber: this.handNumber,
       smallBlind: this.smallBlind,
       bigBlind: this.bigBlind,
+      startingChips: this.startingChips,
+      maxPlayers: this.maxPlayers,
+      blindIncrease: this.blindIncrease,
+      blindTimer: this.blindTimer,
     };
   }
 

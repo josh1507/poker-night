@@ -134,6 +134,68 @@
       to   { transform:translateX(-50%) translateY(0); opacity:1; }
     }
 
+    /* ═══ HOST SETTINGS ═══ */
+    #settings-screen {
+      background:
+        radial-gradient(ellipse at 50% 0%, rgba(201,168,76,0.06) 0%, transparent 55%),
+        var(--bg);
+      padding: 2rem; overflow-y:auto;
+    }
+    .settings-wrap { width:100%; max-width:380px; }
+    .settings-title {
+      font-family:'Cinzel',serif; font-size:1.5rem; font-weight:900;
+      color:var(--gold); text-align:center; margin-bottom:.3rem;
+    }
+    .settings-sub {
+      font-size:.8rem; color:var(--text-muted); text-align:center; margin-bottom:1.8rem;
+    }
+    .setting-group {
+      background:var(--surface); border:1px solid var(--border-hi);
+      border-radius:14px; padding:1rem 1.2rem; margin-bottom:12px;
+    }
+    .setting-group-title {
+      font-size:.6rem; font-weight:700; text-transform:uppercase;
+      letter-spacing:.15em; color:var(--text-muted); margin-bottom:10px;
+    }
+    .setting-row {
+      display:flex; align-items:center; justify-content:space-between;
+      padding:8px 0;
+    }
+    .setting-row + .setting-row { border-top:1px solid var(--border); }
+    .setting-label { font-size:.85rem; font-weight:500; color:var(--text-dim); }
+    .setting-label small { display:block; font-size:.7rem; color:var(--text-muted); margin-top:2px; }
+    .setting-control {
+      display:flex; align-items:center; gap:8px;
+    }
+    .setting-val {
+      font-size:1rem; font-weight:700; color:var(--gold);
+      min-width:50px; text-align:center;
+    }
+    .setting-btn {
+      width:36px; height:36px; border-radius:50%;
+      background:var(--surface2); border:1px solid var(--border-hi);
+      color:var(--text); font-size:1.1rem; font-weight:700;
+      display:flex; align-items:center; justify-content:center;
+      cursor:pointer; font-family:inherit;
+      transition: transform .1s, border-color .15s;
+    }
+    .setting-btn:active { transform:scale(.9); border-color:var(--gold); color:var(--gold); }
+    .setting-toggle {
+      position:relative; width:48px; height:28px;
+      background:var(--surface2); border:1px solid var(--border-hi);
+      border-radius:14px; cursor:pointer; transition: background .2s;
+    }
+    .setting-toggle.on { background:rgba(39,174,96,0.25); border-color:var(--green); }
+    .setting-toggle::after {
+      content:''; position:absolute; top:3px; left:3px;
+      width:20px; height:20px; border-radius:50%;
+      background:var(--text-muted); transition: transform .2s, background .2s;
+    }
+    .setting-toggle.on::after { transform:translateX(20px); background:var(--green); }
+    .settings-actions {
+      display:flex; flex-direction:column; gap:10px; margin-top:1.5rem;
+    }
+
     /* ═══ LOBBY ═══ */
     #lobby-screen {
       background: var(--bg); padding:2rem;
@@ -445,6 +507,82 @@
     <div class="join-err hidden" id="jerr"></div>
   </div>
 
+  <!-- HOST SETTINGS -->
+  <div id="settings-screen" class="screen">
+    <div class="settings-wrap">
+      <div class="settings-title">Game Settings</div>
+      <div class="settings-sub">Configure your table before inviting players</div>
+
+      <div class="setting-group">
+        <div class="setting-group-title">Chips</div>
+        <div class="setting-row">
+          <div class="setting-label">Starting Chips</div>
+          <div class="setting-control">
+            <button class="setting-btn" onclick="adjSetting('startChips',-500)">&minus;</button>
+            <span class="setting-val" id="set-startChips">1000</span>
+            <button class="setting-btn" onclick="adjSetting('startChips',500)">+</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="setting-group">
+        <div class="setting-group-title">Blinds</div>
+        <div class="setting-row">
+          <div class="setting-label">Small Blind</div>
+          <div class="setting-control">
+            <button class="setting-btn" onclick="adjSetting('smallBlind',-5)">&minus;</button>
+            <span class="setting-val" id="set-smallBlind">10</span>
+            <button class="setting-btn" onclick="adjSetting('smallBlind',5)">+</button>
+          </div>
+        </div>
+        <div class="setting-row">
+          <div class="setting-label">Big Blind</div>
+          <div class="setting-control">
+            <button class="setting-btn" onclick="adjSetting('bigBlind',-10)">&minus;</button>
+            <span class="setting-val" id="set-bigBlind">20</span>
+            <button class="setting-btn" onclick="adjSetting('bigBlind',10)">+</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="setting-group">
+        <div class="setting-group-title">Table</div>
+        <div class="setting-row">
+          <div class="setting-label">Max Players</div>
+          <div class="setting-control">
+            <button class="setting-btn" onclick="adjSetting('maxPlayers',-1)">&minus;</button>
+            <span class="setting-val" id="set-maxPlayers">8</span>
+            <button class="setting-btn" onclick="adjSetting('maxPlayers',1)">+</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="setting-group">
+        <div class="setting-group-title">Blind Schedule</div>
+        <div class="setting-row">
+          <div class="setting-label">
+            Auto-Increase Blinds
+            <small>Blinds double on a timer</small>
+          </div>
+          <div class="setting-toggle" id="set-blindIncrease" onclick="toggleSetting('blindIncrease')"></div>
+        </div>
+        <div class="setting-row hidden" id="blind-timer-row">
+          <div class="setting-label">Increase Every</div>
+          <div class="setting-control">
+            <button class="setting-btn" onclick="adjSetting('blindTimer',-5)">&minus;</button>
+            <span class="setting-val" id="set-blindTimer">15 min</span>
+            <button class="setting-btn" onclick="adjSetting('blindTimer',5)">+</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="settings-actions">
+        <button class="btn btn-gold" onclick="confirmSettings()">Create Game</button>
+        <button class="btn btn-outline" onclick="show('join-screen')">Back</button>
+      </div>
+    </div>
+  </div>
+
   <!-- LOBBY -->
   <div id="lobby-screen" class="screen">
     <div class="lobby-wrap">
@@ -570,15 +708,57 @@
         +'</div>';
     }
 
+    // SETTINGS
+    var gameSettings = {
+      startChips: 1000,
+      smallBlind: 10,
+      bigBlind: 20,
+      maxPlayers: 8,
+      blindIncrease: false,
+      blindTimer: 15
+    };
+    var settingLimits = {
+      startChips: {min:100,max:50000,fmt:function(v){return v;}},
+      smallBlind: {min:5,max:5000,fmt:function(v){return v;}},
+      bigBlind: {min:10,max:10000,fmt:function(v){return v;}},
+      maxPlayers: {min:2,max:10,fmt:function(v){return v;}},
+      blindTimer: {min:5,max:60,fmt:function(v){return v+' min';}}
+    };
+    function adjSetting(key,delta){
+      var lim=settingLimits[key];
+      gameSettings[key]=Math.max(lim.min,Math.min(lim.max,gameSettings[key]+delta));
+      // Keep big blind >= small blind * 2
+      if(key==='smallBlind'&&gameSettings.bigBlind<gameSettings.smallBlind*2){
+        gameSettings.bigBlind=gameSettings.smallBlind*2;
+        document.getElementById('set-bigBlind').textContent=settingLimits.bigBlind.fmt(gameSettings.bigBlind);
+      }
+      if(key==='bigBlind'&&gameSettings.bigBlind<gameSettings.smallBlind*2){
+        gameSettings.bigBlind=gameSettings.smallBlind*2;
+      }
+      document.getElementById('set-'+key).textContent=lim.fmt(gameSettings[key]);
+    }
+    function toggleSetting(key){
+      gameSettings[key]=!gameSettings[key];
+      var el=document.getElementById('set-'+key);
+      el.classList.toggle('on',gameSettings[key]);
+      if(key==='blindIncrease'){
+        document.getElementById('blind-timer-row').classList.toggle('hidden',!gameSettings[key]);
+      }
+    }
+    function confirmSettings(){
+      myName=document.getElementById('inp-name').value.trim();
+      socket.emit('create-room',{name:myName,settings:gameSettings},function(r){
+        if(r.success){myId=r.playerId;isHost=true;show('lobby-screen');}
+        else showErr(r.error);
+      });
+    }
+
     // JOIN
     function createRoom() {
       var n=document.getElementById('inp-name').value.trim();
       if(!n){showErr('Enter your name');return;}
       myName=n;
-      socket.emit('create-room',{name:n},function(r){
-        if(r.success){myId=r.playerId;isHost=true;show('lobby-screen');}
-        else showErr(r.error);
-      });
+      show('settings-screen');
     }
     function joinRoom() {
       var n=document.getElementById('inp-name').value.trim();

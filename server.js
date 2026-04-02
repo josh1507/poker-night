@@ -154,6 +154,20 @@ io.on('connection', (socket) => {
   socket.on('create-room', (data, callback) => {
     const code = generateRoomCode();
     const room = new Room(code, socket.id);
+
+    // Apply custom settings from host
+    if (data.settings) {
+      const s = data.settings;
+      if (s.startChips) room.startingChips = Math.max(100, Math.min(50000, s.startChips));
+      if (s.smallBlind) room.smallBlind = Math.max(5, Math.min(5000, s.smallBlind));
+      if (s.bigBlind) room.bigBlind = Math.max(10, Math.min(10000, s.bigBlind));
+      if (s.maxPlayers) room.maxPlayers = Math.max(2, Math.min(10, s.maxPlayers));
+      if (s.blindIncrease) {
+        room.blindIncrease = true;
+        room.blindTimer = Math.max(5, Math.min(60, s.blindTimer || 15));
+      }
+    }
+
     rooms.set(code, room);
 
     const player = room.addPlayer(socket.id, data.name, socket.id);
