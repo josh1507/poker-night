@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Poker Night — Dashboard</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0a0c0e;
+      --surface: #12161c;
+      --surface2: #1a1f28;
+      --border: rgba(255,255,255,0.06);
+      --border-hi: rgba(255,255,255,0.1);
+      --gold: #c9a84c;
+      --gold-hi: #e8c65e;
+      --green: #27ae60;
+      --red: #c0392b;
+      --blue: #4ea8de;
+      --text: #e8e4dc;
+      --text-dim: #8b8475;
+      --text-muted: #55504a;
+    }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg); color: var(--text);
+      min-height: 100vh;
+    }
+
+    /* Login */
+    .login-wrap {
+      display: flex; align-items: center; justify-content: center;
+      min-height: 100vh; padding: 2rem;
+    }
+    .login-box {
+      background: var(--surface); border: 1px solid var(--border-hi);
+      border-radius: 18px; padding: 2.5rem; width: 100%; max-width: 360px;
+      text-align: center;
+    }
+    .login-box h1 {
+      font-family: 'Cinzel', serif; font-size: 1.3rem; color: var(--gold);
+      margin-bottom: .4rem;
+    }
+    .login-box p { font-size: .8rem; color: var(--text-muted); margin-bottom: 1.5rem; }
+    .login-box input {
+      width: 100%; padding: 12px 16px; background: var(--surface2);
+      border: 1px solid var(--border-hi); border-radius: 10px;
+      color: var(--text); font-family: inherit; font-size: .9rem;
+      outline: none; margin-bottom: 12px;
+    }
+    .login-box input:focus { border-color: var(--gold); }
+    .login-box button {
+      width: 100%; padding: 13px; background: var(--gold); color: #1a1200;
+      border: none; border-radius: 10px; font-family: inherit;
+      font-size: .9rem; font-weight: 700; cursor: pointer;
+    }
+    .login-box button:active { opacity: .85; }
+    .login-err { color: var(--red); font-size: .8rem; margin-top: 8px; display: none; }
+
+    /* Dashboard */
+    .dash { display: none; padding: 2rem; max-width: 900px; margin: 0 auto; }
+    .dash.active { display: block; }
+    .dash-header {
+      display: flex; align-items: baseline; justify-content: space-between;
+      margin-bottom: 2rem; flex-wrap: wrap; gap: 8px;
+    }
+    .dash-header h1 {
+      font-family: 'Cinzel', serif; font-size: 1.5rem; color: var(--gold);
+    }
+    .dash-header .refresh {
+      font-size: .75rem; color: var(--text-muted); cursor: pointer;
+      background: var(--surface2); border: 1px solid var(--border-hi);
+      padding: 6px 14px; border-radius: 8px; font-family: inherit;
+    }
+    .dash-header .refresh:hover { color: var(--text-dim); border-color: var(--gold); }
+
+    /* Stat cards */
+    .stats-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 14px; margin-bottom: 2rem;
+    }
+    .stat-card {
+      background: var(--surface); border: 1px solid var(--border-hi);
+      border-radius: 14px; padding: 1.2rem 1.4rem;
+    }
+    .stat-label {
+      font-size: .7rem; font-weight: 600; text-transform: uppercase;
+      letter-spacing: .12em; color: var(--text-muted); margin-bottom: 6px;
+    }
+    .stat-val {
+      font-size: 2rem; font-weight: 800; line-height: 1;
+    }
+    .stat-val.gold { color: var(--gold); }
+    .stat-val.green { color: var(--green); }
+    .stat-val.blue { color: var(--blue); }
+    .stat-val.red { color: var(--red); }
+    .stat-sub { font-size: .72rem; color: var(--text-muted); margin-top: 4px; }
+
+    /* Sections */
+    .section { margin-bottom: 2rem; }
+    .section h2 {
+      font-size: .8rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: .12em; color: var(--text-dim); margin-bottom: 12px;
+    }
+
+    /* Active rooms */
+    .rooms-list { display: flex; flex-direction: column; gap: 8px; }
+    .room-row {
+      background: var(--surface); border: 1px solid var(--border-hi);
+      border-radius: 10px; padding: 12px 16px;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .room-code {
+      font-family: 'Cinzel', serif; font-weight: 700; font-size: 1.1rem;
+      color: var(--gold); letter-spacing: .1em;
+    }
+    .room-info { display: flex; gap: 16px; font-size: .78rem; color: var(--text-dim); }
+    .room-badge {
+      font-size: .65rem; font-weight: 600; padding: 3px 8px; border-radius: 6px;
+      text-transform: uppercase; letter-spacing: .06em;
+    }
+    .badge-active { background: rgba(39,174,96,0.15); color: var(--green); }
+    .badge-lobby { background: rgba(201,168,76,0.15); color: var(--gold); }
+    .no-rooms { color: var(--text-muted); font-size: .85rem; font-style: italic; }
+
+    /* Monthly table */
+    .month-table {
+      width: 100%; border-collapse: collapse;
+      background: var(--surface); border-radius: 12px; overflow: hidden;
+      border: 1px solid var(--border-hi);
+    }
+    .month-table th {
+      text-align: left; padding: 10px 14px; font-size: .7rem; font-weight: 700;
+      text-transform: uppercase; letter-spacing: .1em; color: var(--text-muted);
+      background: var(--surface2); border-bottom: 1px solid var(--border);
+    }
+    .month-table td {
+      padding: 10px 14px; font-size: .85rem; border-bottom: 1px solid var(--border);
+      color: var(--text-dim);
+    }
+    .month-table tr:last-child td { border-bottom: none; }
+    .month-table td:first-child { font-weight: 600; color: var(--text); }
+    .month-table td.num { font-weight: 700; font-variant-numeric: tabular-nums; }
+  </style>
+</head>
+<body>
+
+  <!-- Login screen -->
+  <div class="login-wrap" id="login">
+    <div class="login-box">
+      <h1>Dashboard</h1>
+      <p>Enter your admin password</p>
+      <input type="password" id="pass-input" placeholder="Password" autofocus
+        onkeydown="if(event.key==='Enter')doLogin()">
+      <button onclick="doLogin()">Log In</button>
+      <div class="login-err" id="login-err">Incorrect password</div>
+    </div>
+  </div>
+
+  <!-- Dashboard -->
+  <div class="dash" id="dash">
+    <div class="dash-header">
+      <h1>Poker Night Dashboard</h1>
+      <button class="refresh" onclick="fetchStats()">Refresh</button>
+    </div>
+
+    <div class="stats-grid" id="top-stats"></div>
+
+    <div class="section">
+      <h2>Active Rooms</h2>
+      <div class="rooms-list" id="active-rooms"></div>
+    </div>
+
+    <div class="section">
+      <h2>Monthly Breakdown</h2>
+      <table class="month-table" id="month-table">
+        <thead>
+          <tr>
+            <th>Month</th>
+            <th>Games</th>
+            <th>Players Joined</th>
+            <th>Unique Players</th>
+            <th>Hands Played</th>
+          </tr>
+        </thead>
+        <tbody id="month-body"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <script>
+    var token = null;
+
+    function doLogin() {
+      var pass = document.getElementById('pass-input').value;
+      fetch('/dashboard/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: 'password=' + encodeURIComponent(pass)
+      })
+      .then(function(r) { return r.json(); })
+      .then(function(d) {
+        if (d.success) {
+          token = d.token;
+          document.getElementById('login').style.display = 'none';
+          document.getElementById('dash').classList.add('active');
+          fetchStats();
+        } else {
+          var err = document.getElementById('login-err');
+          err.style.display = 'block';
+          setTimeout(function() { err.style.display = 'none'; }, 3000);
+        }
+      });
+    }
+
+    function fetchStats() {
+      fetch('/dashboard/stats', { headers: { 'Authorization': token } })
+      .then(function(r) { return r.json(); })
+      .then(function(d) {
+        renderTopStats(d);
+        renderRooms(d.activeRooms);
+        renderMonths(d.stats.months);
+      });
+    }
+
+    function renderTopStats(d) {
+      var months = d.stats.months || {};
+      var keys = Object.keys(months).sort();
+      var currentKey = keys.length ? keys[keys.length - 1] : null;
+      var cur = currentKey ? months[currentKey] : null;
+
+      var totalGames = 0, totalPlayers = 0, totalHands = 0, allNames = [];
+      keys.forEach(function(k) {
+        var m = months[k];
+        totalGames += m.gamesCreated;
+        totalPlayers += m.playersJoined;
+        totalHands += m.handsPlayed;
+        (m.uniqueNames || []).forEach(function(n) {
+          if (allNames.indexOf(n) < 0) allNames.push(n);
+        });
+      });
+
+      var html = '';
+      html += card('Active Rooms', d.activeRooms.length, 'green', 'right now');
+      html += card('Games This Month', cur ? cur.gamesCreated : 0, 'gold', currentKey || '—');
+      html += card('Players This Month', cur ? cur.playersJoined : 0, 'blue', (cur ? (cur.uniqueNames || []).length : 0) + ' unique');
+      html += card('Hands This Month', cur ? cur.handsPlayed : 0, 'gold', currentKey || '—');
+      html += card('All-Time Games', totalGames, 'gold', keys.length + ' month(s)');
+      html += card('All-Time Players', totalPlayers, 'blue', allNames.length + ' unique');
+      html += card('All-Time Hands', totalHands, 'gold', '');
+      document.getElementById('top-stats').innerHTML = html;
+    }
+
+    function card(label, val, color, sub) {
+      return '<div class="stat-card"><div class="stat-label">' + label + '</div>'
+        + '<div class="stat-val ' + color + '">' + val + '</div>'
+        + (sub ? '<div class="stat-sub">' + sub + '</div>' : '')
+        + '</div>';
+    }
+
+    function renderRooms(rooms) {
+      var el = document.getElementById('active-rooms');
+      if (!rooms.length) {
+        el.innerHTML = '<div class="no-rooms">No active rooms</div>';
+        return;
+      }
+      el.innerHTML = rooms.map(function(r) {
+        var badge = r.gameStarted
+          ? '<span class="room-badge badge-active">Playing</span>'
+          : '<span class="room-badge badge-lobby">Lobby</span>';
+        return '<div class="room-row">'
+          + '<span class="room-code">' + r.code + '</span>'
+          + '<div class="room-info">'
+          + '<span>' + r.players + '/' + r.totalPlayers + ' online</span>'
+          + (r.gameStarted ? '<span>Hand #' + r.handNumber + '</span>' : '')
+          + badge
+          + '</div></div>';
+      }).join('');
+    }
+
+    function renderMonths(months) {
+      var keys = Object.keys(months || {}).sort().reverse();
+      var body = document.getElementById('month-body');
+      if (!keys.length) {
+        body.innerHTML = '<tr><td colspan="5" style="color:var(--text-muted);font-style:italic">No data yet</td></tr>';
+        return;
+      }
+      body.innerHTML = keys.map(function(k) {
+        var m = months[k];
+        var monthName = formatMonth(k);
+        return '<tr>'
+          + '<td>' + monthName + '</td>'
+          + '<td class="num">' + m.gamesCreated + '</td>'
+          + '<td class="num">' + m.playersJoined + '</td>'
+          + '<td class="num">' + (m.uniqueNames || []).length + '</td>'
+          + '<td class="num">' + m.handsPlayed + '</td>'
+          + '</tr>';
+      }).join('');
+    }
+
+    function formatMonth(key) {
+      var parts = key.split('-');
+      var names = ['', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+      return names[parseInt(parts[1])] + ' ' + parts[0];
+    }
+  </script>
+</body>
+</html>

@@ -2,13 +2,56 @@ const express = require('express');
 const http = require('http');
 const { Server } = require('socket.io');
 const path = require('path');
+const fs = require('fs');
 const Room = require('./game/Room');
 
 const app = express();
+app.use(express.urlencoded({ extended: false }));
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: { origin: '*' },
 });
+
+// ── Stats tracking ──
+const STATS_FILE = path.join(__dirname, 'stats.json');
+const DASHBOARD_PASS = process.env.DASHBOARD_PASS || 'poker2026';
+
+function loadStats() {
+  try {
+    return JSON.parse(fs.readFileSync(STATS_FILE, 'utf8'));
+  } catch {
+    return { months: {} };
+  }
+}
+
+function saveStats(stats) {
+  fs.writeFileSync(STATS_FILE, JSON.stringify(stats, null, 2));
+}
+
+function getMonthKey() {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+}
+
+function trackEvent(event) {
+  const stats = loadStats();
+  const key = getMonthKey();
+  if (!stats.months[key]) {
+    stats.months[key] = { gamesCreated: 0, playersJoined: 0, handsPlayed: 0, uniqueNames: [] };
+  }
+  const m = stats.months[key];
+  if (event.type === 'room-created') {
+    m.gamesCreated++;
+  } else if (event.type === 'player-joined') {
+    m.playersJoined++;
+    if (event.name && !m.uniqueNames.includes(event.name)) {
+      m.uniqueNames.push(event.name);
+    }
+  } else if (event.type === 'hand-played') {
+    m.handsPlayed++;
+  }
+  saveStats(stats);
+}
 
 // HTML page routes (must come before static middleware)
 app.get('/', (req, res) => {
@@ -19,6 +62,36 @@ app.get('/mobile', (req, res) => {
 });
 app.get('/tv', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'tv', 'index.html'));
+});
+
+// Dashboard
+app.get('/dashboard', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'dashboard', 'index.html'));
+});
+app.post('/dashboard/login', (req, res) => {
+  if (req.body.password === DASHBOARD_PASS) {
+    res.json({ success: true, token: Buffer.from(DASHBOARD_PASS).toString('base64') });
+  } else {
+    res.status(401).json({ success: false, error: 'Wrong password' });
+  }
+});
+app.get('/dashboard/stats', (req, res) => {
+  const token = req.headers.authorization;
+  if (token !== Buffer.from(DASHBOARD_PASS).toString('base64')) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+  const stats = loadStats();
+  const activeRooms = [];
+  for (const [code, room] of rooms) {
+    activeRooms.push({
+      code,
+      players: room.players.filter(p => p.connected).length,
+      totalPlayers: room.players.length,
+      gameStarted: room.gameStarted,
+      handNumber: room.handNumber,
+    });
+  }
+  res.json({ stats, activeRooms });
 });
 
 // Static assets (css, js, etc.)
@@ -86,6 +159,8 @@ io.on('connection', (socket) => {
     socket.roomCode = code;
     socket.playerId = socket.id;
 
+    trackEvent({ type: 'room-created' });
+    trackEvent({ type: 'player-joined', name: data.name });
     callback({ success: true, code, playerId: socket.id });
     broadcastLobby(room);
   });
@@ -126,6 +201,7 @@ io.on('connection', (socket) => {
     socket.roomCode = code;
     socket.playerId = socket.id;
 
+    trackEvent({ type: 'player-joined', name: data.name });
     callback({ success: true, code, playerId: socket.id });
     broadcastLobby(room);
   });
@@ -164,6 +240,7 @@ io.on('connection', (socket) => {
     const started = room.startNewHand();
     if (!started) { callback?.({ success: false, error: 'Could not start' }); return; }
 
+    trackEvent({ type: 'hand-played' });
     callback?.({ success: true });
     broadcastGameState(room);
   });
@@ -205,6 +282,7 @@ io.on('connection', (socket) => {
       setTimeout(() => {
         if (room.game && room.game.handComplete) {
           room.startNewHand();
+          trackEvent({ type: 'hand-played' });
           broadcastGameState(room);
         }
       }, 5000);
@@ -217,6 +295,7 @@ io.on('connection', (socket) => {
     if (!room.game || !room.game.handComplete) return;
 
     room.startNewHand();
+    trackEvent({ type: 'hand-played' });
     broadcastGameState(room);
     callback?.({ success: true });
   });
