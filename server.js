@@ -12,7 +12,7 @@ const io = new Server(server, {
 
 // HTML page routes (must come before static middleware)
 app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'mobile', 'index.html'));
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 app.get('/mobile', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'mobile', 'index.html'));

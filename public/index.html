@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Poker Night</title>
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#0a0c0e">
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0a0c0e;
+      --surface: #12161c;
+      --surface2: #1a1f28;
+      --surface3: #222934;
+      --border: rgba(255,255,255,0.05);
+      --border-hi: rgba(255,255,255,0.09);
+      --gold: #c9a84c;
+      --gold-hi: #e8c65e;
+      --gold-lo: #a07b2e;
+      --green: #27ae60;
+      --red: #c0392b;
+      --blue: #4ea8de;
+      --text: #e8e4dc;
+      --text-dim: #8b8475;
+      --text-muted: #55504a;
+    }
+    * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; -webkit-font-smoothing:antialiased; }
+    body {
+      font-family: 'Inter', -apple-system, sans-serif;
+      background: var(--bg); color: var(--text);
+      min-height: 100vh; min-height: 100dvh;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      padding: 2rem 1.5rem;
+      background-image:
+        radial-gradient(ellipse at 50% 0%, rgba(201,168,76,0.06) 0%, transparent 60%),
+        radial-gradient(ellipse at 50% 100%, rgba(39,174,96,0.04) 0%, transparent 60%);
+    }
+
+    .container {
+      width: 100%; max-width: 420px;
+      display: flex; flex-direction: column; align-items: center; gap: 2.5rem;
+    }
+
+    /* Header */
+    .header { text-align: center; }
+    .suits {
+      font-size: 1.2rem; letter-spacing: .6em; margin-bottom: .6rem;
+      color: var(--text-muted);
+    }
+    .suits .red { color: var(--red); }
+    h1 {
+      font-family: 'Cinzel', serif; font-size: 2.6rem; font-weight: 900;
+      letter-spacing: .06em;
+      background: linear-gradient(180deg, var(--gold-hi), var(--gold), var(--gold-lo));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text;
+      line-height: 1.1; margin-bottom: .3rem;
+    }
+    .tagline {
+      font-size: .85rem; color: var(--text-muted); letter-spacing: .04em;
+    }
+
+    /* Instructions */
+    .instructions {
+      background: var(--surface); border: 1px solid var(--border-hi);
+      border-radius: 16px; padding: 1.4rem 1.5rem; width: 100%;
+    }
+    .instructions h2 {
+      font-family: 'Cinzel', serif; font-size: .85rem; font-weight: 700;
+      color: var(--gold); letter-spacing: .15em; text-transform: uppercase;
+      margin-bottom: .9rem;
+    }
+    .steps { list-style: none; display: flex; flex-direction: column; gap: .7rem; }
+    .steps li {
+      display: flex; align-items: flex-start; gap: .75rem;
+      font-size: .85rem; line-height: 1.5; color: var(--text-dim);
+    }
+    .step-num {
+      flex-shrink: 0; width: 24px; height: 24px;
+      background: var(--surface2); border: 1px solid var(--border-hi);
+      border-radius: 50%; display: flex; align-items: center; justify-content: center;
+      font-size: .7rem; font-weight: 700; color: var(--gold);
+    }
+    .steps strong { color: var(--text); font-weight: 600; }
+
+    /* Buttons */
+    .actions { width: 100%; display: flex; flex-direction: column; gap: 12px; }
+
+    .action-btn {
+      display: flex; align-items: center; gap: 14px;
+      width: 100%; padding: 18px 20px;
+      background: var(--surface); border: 1.5px solid var(--border-hi);
+      border-radius: 14px; cursor: pointer;
+      text-align: left; text-decoration: none;
+      transition: transform .12s, border-color .2s, background .2s;
+    }
+    .action-btn:active { transform: scale(.97); }
+    .action-btn:hover { border-color: rgba(255,255,255,0.12); background: var(--surface2); }
+
+    .action-btn.primary {
+      background: linear-gradient(180deg, rgba(201,168,76,0.12), rgba(201,168,76,0.05));
+      border-color: rgba(201,168,76,0.25);
+    }
+    .action-btn.primary:hover {
+      border-color: rgba(201,168,76,0.4); background: linear-gradient(180deg, rgba(201,168,76,0.18), rgba(201,168,76,0.08));
+    }
+
+    .action-icon {
+      width: 48px; height: 48px; border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.4rem; flex-shrink: 0;
+    }
+    .icon-host { background: rgba(201,168,76,0.12); }
+    .icon-join { background: rgba(39,174,96,0.12); }
+    .icon-tv { background: rgba(78,168,222,0.12); }
+
+    .action-text { flex: 1; }
+    .action-title {
+      font-size: 1rem; font-weight: 700; color: var(--text);
+      margin-bottom: 2px;
+    }
+    .action-desc {
+      font-size: .78rem; color: var(--text-muted); line-height: 1.4;
+    }
+
+    .action-arrow {
+      color: var(--text-muted); font-size: 1.1rem; flex-shrink: 0;
+    }
+
+    /* Footer */
+    .footer {
+      margin-top: .5rem;
+      font-size: .7rem; color: var(--text-muted); text-align: center;
+      letter-spacing: .03em;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="suits"><span class="red">&#9829;</span> &#9824; <span class="red">&#9830;</span> &#9827;</div>
+      <h1>Poker Night</h1>
+      <div class="tagline">Multiplayer Texas Hold'em</div>
+    </div>
+
+    <div class="instructions">
+      <h2>How to Play</h2>
+      <ol class="steps">
+        <li>
+          <span class="step-num">1</span>
+          <span>One person taps <strong>Host a Game</strong> to create a room and get a 4-letter code.</span>
+        </li>
+        <li>
+          <span class="step-num">2</span>
+          <span>Everyone else taps <strong>Join a Table</strong> and enters the code on their phone.</span>
+        </li>
+        <li>
+          <span class="step-num">3</span>
+          <span>Open <strong>Table View</strong> on a TV or large screen so everyone can see the community cards.</span>
+        </li>
+        <li>
+          <span class="step-num">4</span>
+          <span>The host deals when everyone's in. Your hole cards show on your phone &mdash; keep them secret!</span>
+        </li>
+      </ol>
+    </div>
+
+    <div class="actions">
+      <a href="/mobile" class="action-btn primary">
+        <div class="action-icon icon-host">&#9824;</div>
+        <div class="action-text">
+          <div class="action-title">Host a Game</div>
+          <div class="action-desc">Create a new room and invite your friends</div>
+        </div>
+        <div class="action-arrow">&#8250;</div>
+      </a>
+
+      <a href="/mobile" class="action-btn">
+        <div class="action-icon icon-join">&#9827;</div>
+        <div class="action-text">
+          <div class="action-title">Join a Table</div>
+          <div class="action-desc">Enter a room code to jump into a game</div>
+        </div>
+        <div class="action-arrow">&#8250;</div>
+      </a>
+
+      <a href="/tv" class="action-btn">
+        <div class="action-icon icon-tv">&#9830;</div>
+        <div class="action-text">
+          <div class="action-title">Table View</div>
+          <div class="action-desc">Display the shared table on a TV or big screen</div>
+        </div>
+        <div class="action-arrow">&#8250;</div>
+      </a>
+    </div>
+
+    <div class="footer">Play on any device with a browser &mdash; no app needed</div>
+  </div>
+</body>
+</html>
