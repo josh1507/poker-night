@@ -433,14 +433,14 @@
         <label for="inp-name">Your Name</label>
         <input type="text" id="inp-name" placeholder="Enter your name" maxlength="12" autocomplete="off" spellcheck="false">
       </div>
-      <div class="field">
+      <div class="field" id="code-field">
         <label for="inp-code">Room Code</label>
         <input type="text" id="inp-code" placeholder="ABCD" maxlength="4" autocomplete="off" spellcheck="false">
       </div>
-      <button class="btn btn-gold" onclick="joinRoom()">Join Table</button>
-      <div class="join-div"><span>or</span></div>
-      <button class="btn btn-outline" onclick="createRoom()">Host a New Game</button>
-      <div class="join-hint">Enter your name and the room code shown on the TV, or host a new game.</div>
+      <button class="btn btn-gold" id="btn-join" onclick="joinRoom()">Join Table</button>
+      <div class="join-div" id="join-divider"><span>or</span></div>
+      <button class="btn btn-outline" id="btn-host" onclick="createRoom()">Host a New Game</button>
+      <div class="join-hint" id="join-hint">Enter your name and the room code shown on the TV, or host a new game.</div>
     </div>
     <div class="join-err hidden" id="jerr"></div>
   </div>
@@ -539,6 +539,16 @@
     var SY = {h:'\u2665',d:'\u2666',c:'\u2663',s:'\u2660'};
     var RN = {2:'2',3:'3',4:'4',5:'5',6:'6',7:'7',8:'8',9:'9',10:'10',11:'J',12:'Q',13:'K',14:'A'};
     var myId=null, myName=null, isHost=false, st=null, rMin=0, rMax=0, wasTurn=false;
+
+    // Host mode: hide join fields, show only host button
+    if(new URLSearchParams(window.location.search).get('host')==='1'){
+      document.getElementById('code-field').style.display='none';
+      document.getElementById('btn-join').style.display='none';
+      document.getElementById('join-divider').style.display='none';
+      document.getElementById('btn-host').className='btn btn-gold';
+      document.getElementById('btn-host').textContent='Create Game';
+      document.getElementById('join-hint').textContent='Enter your name to create a room. Share the code with your friends to join.';
+    }
 
     function show(id) {
       document.querySelectorAll('.screen').forEach(function(s){s.classList.remove('active')});
